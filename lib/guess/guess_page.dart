@@ -1,61 +1,114 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
-import 'result_notice.dart';
+
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'guess_app_bar.dart';
+import 'result_notice.dart';
+
 class GuessPage extends StatefulWidget {
   const GuessPage({super.key, required this.title});
+
   final String title;
 
   @override
   State<GuessPage> createState() => _GuessPageState();
 }
-class _GuessPageState extends State<GuessPage> {
+
+class _GuessPageState extends State<GuessPage> with SingleTickerProviderStateMixin{
+
+  late AnimationController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+  }
+
   int _value = 0;
-  bool _guessing = false;
+
   Random _random = Random();
-  TextEditingController _guessCtrl =TextEditingController();
-  void _generateRandomValue() {
-    setState(() {
-      _guessing = true; // 点击按钮时，表示游戏开始
-      _value=_random.nextInt(100);
-    });
-  }
-  void _onCheck(){
-    print("---check $_value,猜的数字是${_guessCtrl.text}");
-  }
+  bool _guessing = false;
+  bool? _isBig;
+
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    _guessCtrl.dispose();//输入控制器有销毁的方法，需要覆写状态类的 dispose 方法，调用一下：
-    // 也不知道为啥复写一下
+    _guessCtrl.dispose();
+    controller.dispose();
     super.dispose();
   }
+
+  void _generateRandomValue() {
+    setState(() {
+      _guessing = true;
+      _value = _random.nextInt(100);
+      print(_value);
+    });
+  }
+
+  TextEditingController _guessCtrl = TextEditingController();
+
+  void _onCheck() {
+    print("=====Check:目标数值:$_value=====${_guessCtrl.text}============");
+    int? guessValue = int.tryParse(_guessCtrl.text);
+    // 游戏未开始，或者输入非整数，无视
+    if (!_guessing || guessValue == null) return;
+    controller.forward(from: 0);
+    //猜对了
+    if (guessValue == _value) {
+      setState(() {
+        _guessing = false;
+        _isBig = null;
+      }); // 清空状态
+      ScaffoldMessenger.of(context).showSnackBar(//显示SnackBar
+        SnackBar(
+          content: const Text('猜对了'),
+          duration: const Duration(milliseconds: 500),
+        ),
+      );
+
+      return;
+    }
+    // 猜错了
+    setState(() {
+      _isBig = guessValue > _value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:GuessAppBar(
-        onCheck: _onCheck,
+      appBar: GuessAppBar(
         controller: _guessCtrl,
+        onCheck: _onCheck,
       ),
-      body:Stack(
+      body: Stack(
         children: [
-          // Column(
-          //   children: [
-          //     resultNotice(color:Colors.greenAccent,info:'大了'),
-          //     resultNotice(color:Colors.blueAccent,info:'小了'),
-          //   ],
-          // ),
+          if(_isBig!=null)
+            Column(
+              children: [
+                if(_isBig!)
+                  ResultNotice(color:Colors.redAccent,info:'大了',controller: controller,),
+                Spacer(),
+                if(!_isBig!)
+                  ResultNotice(color:Colors.blueAccent,info:'小了',controller: controller,),
+              ],
+            ),
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                if(!_guessing)
-                  const Text('点击生成随机数值',),
+                if (!_guessing)
+                  const Text(
+                    '点击生成随机数值',
+                  ),
                 Text(
                   _guessing ? '**' : '$_value',
-                  style: const TextStyle(fontSize: 68, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 68, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -66,8 +119,8 @@ class _GuessPageState extends State<GuessPage> {
         onPressed: _guessing ? null : _generateRandomValue,
         backgroundColor: _guessing ? Colors.grey : Colors.blue,
         tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        child: const Icon(Icons.generating_tokens_outlined),
+      ),
     );
   }
 }
