@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'counter/counter_page.dart';
 import 'guess/guess_page.dart';
+import 'package:flutter/src/material/colors.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.grey,
       ),
       home: const GuessPage(title: '猜数字'),
     );
