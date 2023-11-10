@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class resultNotice extends StatelessWidget{
+class ResultNotice extends StatelessWidget{
   final Color color;
   final String info;
 
-    const resultNotice({
+    const ResultNotice({
       Key? key,
       required this.color,
       required this.info,

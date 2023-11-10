@@ -11,6 +11,7 @@ class GuessPage extends StatefulWidget {
   State<GuessPage> createState() => _GuessPageState();
 }
 class _GuessPageState extends State<GuessPage> {
+  bool? _isBig;
   int _value = 0;
   bool _guessing = false;
   Random _random = Random();
@@ -23,6 +24,35 @@ class _GuessPageState extends State<GuessPage> {
   }
   void _onCheck(){
     print("---check $_value,猜的数字是${_guessCtrl.text}");
+    int guessValue = int.parse(_guessCtrl.text);
+    if (!_guessing || guessValue == null) return;
+    if (guessValue == _value){
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('恭喜你猜对了'),
+              content: Text('数字是$_value'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('确定'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          });
+      setState(() {
+        _isBig = null;
+        _guessing = false;
+      });
+      return;
+    } else {
+      setState(() {//猜错了，根据猜的数字和随机数值的大小，设置 _isBig 的值
+        _isBig = guessValue > _value;//猜的数字大了
+      });
+    }
   }
 
   @override
@@ -41,12 +71,16 @@ class _GuessPageState extends State<GuessPage> {
       ),
       body:Stack(
         children: [
-          // Column(
-          //   children: [
-          //     resultNotice(color:Colors.greenAccent,info:'大了'),
-          //     resultNotice(color:Colors.blueAccent,info:'小了'),
-          //   ],
-          // ),
+          if(_isBig!=null)
+          Column(
+            children: [
+              if(_isBig!)//如果猜的数字大了，显示大了的提示
+              ResultNotice(color:Colors.greenAccent,info:'大了'),
+              Spacer(),
+              if(!_isBig!)//如果猜的数字小了，显示小了的提示
+              ResultNotice(color:Colors.blueAccent,info:'小了'),
+            ],
+          ),
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
