@@ -60,9 +60,10 @@ class _GuessPageState extends State<GuessPage> with TickerProviderStateMixin {
             );
           });
       setState(() {
-        _isBig = null;
+        _isBig = null; //猜对了，把 _isBig 的值设置为 null
         _guessing = false;
       });
+
       return;
     } else {
       setState(() {

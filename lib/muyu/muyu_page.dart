@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'muyu_image.dart';
 import 'count_panel.dart';
@@ -14,9 +15,24 @@ class MuyuPage extends StatefulWidget {
 
 class _MuyuPageState extends State<MuyuPage> {
   int _counter = 0;
+  AudioPool? pool;
   final Random _random = Random();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();//调用父类的 initState 方法
+    _initAudioPool();
+  }
 
+  void _initAudioPool() async {
+    pool = await FlameAudio.createPool(
+      'muyu_1.mp3',
+      maxPlayers: 4,
+    );
+  }
   void _onKnock() {
+    print('111');
+    pool?.start();
     setState(() {
       int addCount = 1 + _random.nextInt(3);
       _counter += addCount;
